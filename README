@@ -1,0 +1,28 @@
+https://devlje.github.io/heroWalk/
+
+[github.com/devlje](https://github.com/devlje)
+
+
+v1.1: hero walking around the map (Current)
+
+v1.11: hero four side wall collision (Implementing)
+
+v1.2: implement hero shooting 
+
+v2.0: implement enemies
+
+v2.1: enemies random walk
+
+v2.2: enemies bullet collision
+
+v3.0: large map fix camera
+
+
+
+
+
+
+Things maybe to implement: 
+    - power up
+    - map obstacle
+    
