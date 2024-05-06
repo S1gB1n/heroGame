@@ -7,26 +7,46 @@ let boardW = tileSize * col;
 let boardH = tileSize * row;
 let context;
 
-//hero
-let heroW = tileSize*2;
-let heroH = tileSize;
-let heroX = (boardW/2) - (boardW/4);
-let heroY = (boardH/2) - (boardH/4);
+
 
 const gunPositionMap = {};
 gunPositionMap["up"]    = [0, -1];
 gunPositionMap["down"]  = [0, 1];
 gunPositionMap["left"]  = [-1, 0];
 gunPositionMap["right"] = [1, 0];
-let gunPos = "right";
 
+
+
+
+//hero
+let heroW = tileSize*2;
+let heroH = tileSize;
+let heroX = (boardW/2) - (boardW/4);
+let heroY = (boardH/2) - (boardH/4);
+let heroGunPos = "right";
 let hero = {
     x: heroX,
     y: heroY, 
     w: heroW,
     h: heroH,
 
-    gunPosition: gunPos
+    gunPosition: heroGunPos
+}
+
+
+//enemy
+let enemyW = tileSize*2;
+let enemyH = tileSize;
+let enemyX = ((boardW/2) - (boardW/4))*3;
+let enemyY = ((boardH/2) - (boardH/4))*3;
+let enemyGunPos = "left";
+let enemy = {
+    x: enemyX,
+    y: enemyY, 
+    w: enemyW,
+    h: enemyH,
+
+    gunPosition: enemyGunPos
 }
 
 
@@ -44,10 +64,16 @@ window.onload = function(){
     board.height = boardH;
     context = board.getContext("2d");
 
-    heroAlienImg = new Image();
-    heroAlienImg.src = "./sprite/alien.png";
-    heroAlienImg.onload = function(){
-        context.drawImage(heroAlienImg, hero.x, hero.y, hero.w, hero.h);
+    heroImg = new Image();
+    heroImg.src = "./sprite/alien.png";
+    heroImg.onload = function(){
+        context.drawImage(heroImg, hero.x, hero.y, hero.w, hero.h);
+    }
+
+    enemyImg = new Image();
+    enemyImg.src = "./sprite/alien-magenta.png";
+    enemyImg.onload = function(){
+        context.drawImage(enemyImg, hero.x, hero.y, hero.w, hero.h);
     }
 
     requestAnimationFrame(update);
@@ -60,8 +86,11 @@ function update(){
 
     context.clearRect(0, 0, board.width, board.height);
     
-    context.drawImage(heroAlienImg, hero.x, hero.y, hero.w, hero.h);
+    context.drawImage(heroImg, hero.x, hero.y, hero.w, hero.h);
 
+    context.drawImage(enemyImg, enemy.x, enemy.y, enemy.w, enemy.h);
+
+    //draw shoot bullet
     for(let i = 0; i < bulletArray.length; i++){
         let bullet = bulletArray[i];
         bullet.x += gunPositionMap[bullet.gunPosition][0]*bulletVel;
@@ -69,7 +98,24 @@ function update(){
 
         context.fillStyle="white";
         context.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    
+        //enemy avoid bullets
+        enemyMove = avoidProjectile(enemy.x, enemy.y, bullet.x, bullet.y, 30);
+        enemy.x = enemyMove.x;
+        enemy.y = enemyMove.y;
     }
+
+
+    //delete bullets
+    if(bulletArray.length > 10){
+        bulletArray.shift();
+    }
+
+
+
+    // write <something>
+    message = "bullets:" + bulletArray.length;
+    writeOnTheTopLeft(message);
 }
 
 
@@ -92,6 +138,32 @@ function moveHero(e){
         hero.gunPosition = "down";
     }
 }
+
+
+// implement enimies
+function enemies(){
+
+}
+
+
+// Function to calculate new enemy position to avoid projectile
+function avoidProjectile(enemyX, enemyY, projectileX, projectileY, avoidanceDistance) {
+    // Calculate the distance between the enemy and the projectile
+    const distanceX = projectileX - enemyX;
+    const distanceY = projectileY - enemyY;
+
+    // Check if the projectile is within the avoidance distance
+    if (Math.abs(distanceX) <= avoidanceDistance && Math.abs(distanceY) <= avoidanceDistance) {
+        // Calculate new position to avoid the projectile
+        const newX = enemyX + (distanceX < 0 ? avoidanceDistance : -avoidanceDistance);
+        const newY = enemyY + (distanceY < 0 ? avoidanceDistance : -avoidanceDistance);
+        return { x: newX, y: newY };
+    } else {
+        // No need to avoid the projectile, return current position
+        return { x: enemyX, y: enemyY };
+    }
+}
+
 
 // implement wall collision: 2024-04-26
 function notWallCollision(x, y){
@@ -145,8 +217,26 @@ function bullet(e){
             y : by,
             width : wTileSize,
             height: hTileSize,
-            gunPosition: gunPos 
+            gunPosition: gunPos
         }
         bulletArray.push(bullet);
     }
+}
+
+
+//generate random number with min and max
+function getRandomNumber(min, max) {
+    const randomNumber = Math.random();
+    const scaledNumber = randomNumber * (max - min);
+    const result = scaledNumber + min;
+
+    return result;
+}
+
+
+//write message for debugging
+function writeOnTheTopLeft(message){
+    context.fillStyle="white";
+    context.font="16px courier";
+    context.fillText(message, 5, 20);
 }
